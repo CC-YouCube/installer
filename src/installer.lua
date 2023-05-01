@@ -3,13 +3,14 @@ _ _  _ ____ ___ ____ _    _    ____ ____
 | |\ | [__   |  |__| |    |    |___ |__/
 | | \| ___]  |  |  | |___ |___ |___ |  \
 
-Github Repository: https://github.com/Commandcracker/YouCube
+Github Repository: https://github.com/CC-YouCube
+Homepage: https://youcube.madefor.cc/
 License: GPL-3.0
 ]]
 
 -- OpenInstaller v1.0.0 (based on wget)
 
-local BASE_URL = "https://raw.githubusercontent.com/Commandcracker/YouCube/main/client/"
+local BASE_URL = "https://raw.githubusercontent.com/CC-YouCube/client/main/src/"
 
 local files = {
     ["./youcube.lua"] = BASE_URL .. "youcube.lua",
