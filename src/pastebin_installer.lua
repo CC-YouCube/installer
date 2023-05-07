@@ -7,10 +7,9 @@ Github Repository: https://github.com/CC-YouCube
 Homepage: https://youcube.madefor.cc/
 License: GPL-3.0
 ]]
-
 -- OpenPastebinInstaller v1.0.0 (based on wget)
 
-local url = "https://raw.githubusercontent.com/CC-YouCube/installer/main/src/installer.lua"
+local url_to_installer = "https://raw.githubusercontent.com/CC-YouCube/installer/main/src/installer.lua"
 
 if not http then
     printError("OpenPastebinInstaller requires the http API")
@@ -18,44 +17,74 @@ if not http then
     return
 end
 
-local function getFilename(sUrl)
-    sUrl = sUrl:gsub("[#?].*", ""):gsub("/+$", "")
-    return sUrl:match("/([^/]+)$")
+local function getFilename(url_to_file)
+    return url_to_file:gsub("[#?].*", ""):gsub("/+$", ""):match("/([^/]+)$")
 end
 
-local function get(sUrl)
+local function printColoured(text, colour)
+    term.setTextColour(colour)
+    print(text)
+end
+
+local function http_get(url)
     -- Check if the URL is valid
-    local ok, err = http.checkURL(url)
-    if not ok then
-        printError("\"" .. sUrl .. "\" ", err or "Invalid URL.")
+    local valid_url, error_message = http.checkURL(url)
+    if not valid_url then
+        printError(('"%s" %s.'):format(
+            url,
+            error_message or "Invalid URL"
+        ))
         return
     end
 
-    local response, http_err = http.get(sUrl, nil, true)
+    printColoured(
+        ('Connecting to "%s" ... '):format(url),
+        colors.lightGray
+    )
+
+    local response, http_error_message = http.get(url, nil, true)
     if not response then
-        printError("Failed to download \"" .. sUrl .. "\" (" .. http_err .. ")")
+        printError(('Failed to download "%s" (%s).'):format(
+            url,
+            http_error_message or "Unknown error"
+        ))
         return nil
     end
 
-    term.setTextColour(colors.lime)
-    print("Runnig " .. getFilename(url))
-    term.setTextColour(colors.white)
+    local previous_colour = term.getTextColour()
 
-    local sResponse = response.readAll()
+    printColoured(
+        ('Runnig "%s".'):format(getFilename(url)),
+        colors.lime
+    )
+
+    -- Reset colour
+    term.setTextColour(previous_colour)
+
+    local response_body = response.readAll()
     response.close()
-    return sResponse or ""
+
+    if not response_body then
+        printError(('Failed to download "%s" (Empty response).'):format(url))
+    end
+
+    return response_body
 end
 
-local res = get(url)
-if not res then return end
+local response_body = http_get(url_to_installer)
 
-local func, err = load(res, getFilename(url), "t", _ENV)
-if not func then
-    printError(err)
+local loaded_function, load_error_message = load(
+    response_body,
+    getFilename(url_to_installer),
+    "t",
+    _ENV
+)
+if not loaded_function then
+    printError(load_error_message)
     return
 end
 
-local ok, err = pcall(func)
-if not ok then
-    printError(err)
+local pcall_status, function_error_message = pcall(loaded_function)
+if not pcall_status then
+    printError(function_error_message)
 end

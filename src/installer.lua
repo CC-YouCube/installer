@@ -7,7 +7,6 @@ Github Repository: https://github.com/CC-YouCube
 Homepage: https://youcube.madefor.cc/
 License: GPL-3.0
 ]]
-
 -- OpenInstaller v1.0.0 (based on wget)
 
 local BASE_URL = "https://raw.githubusercontent.com/CC-YouCube/client/main/src/"
@@ -27,71 +26,95 @@ if not http then
     return
 end
 
-local function question(_question)
-
-    term.setTextColour(colors.orange)
-    term.write(_question .. "? [")
-    term.setTextColour(colors.lime)
-    term.write('Y')
-    term.setTextColour(colors.orange)
-    term.write('/')
-    term.setTextColour(colors.red)
-    term.write('n')
-    term.setTextColour(colors.orange)
-    term.write("] ")
-    term.setTextColour(colors.white)
-
-    local input = string.lower(string.sub(read(), 1, 1))
-
-    if input == 'y' or input == 'j' or input == '' then
-        return true
-    else
-        return false
+local function tableContains(_table, element)
+    for _, value in pairs(_table) do
+        if value == element then
+            return true
+        end
     end
+    return false
 end
 
-local function get(sUrl)
-    -- Check if the URL is valid
-    local ok, err = http.checkURL(sUrl)
-    if not ok then
-        printError("\"" .. sUrl .. "\" ", err or "Invalid URL.")
+local function writeColoured(text, colour)
+    term.setTextColour(colour)
+    term.write(text)
+end
+
+local function question(message)
+    local previous_colour = term.getTextColour()
+
+    writeColoured(message .. "? [", colors.orange)
+    writeColoured('Y', colors.lime)
+    writeColoured('/', colors.orange)
+    writeColoured('n', colors.red)
+    writeColoured('] ', colors.orange)
+
+    -- Reset colour
+    term.setTextColour(previous_colour)
+
+    local input_char = read():sub(1, 1):lower()
+    local accept_chars = { 'o', 'k', 'y', 'j', '' }
+
+    if tableContains(accept_chars, input_char) then
+        return true
+    end
+
+    return false
+end
+
+local unknown_error = "Unknown error"
+
+local function http_get(url)
+    local valid_url, error_message = http.checkURL(url)
+    if not valid_url then
+        printError(('"%s" %s.'):format(
+            url,
+            error_message or "Invalid URL"
+        ))
         return
     end
 
-    --term.setTextColour(colors.lightGray)
-    --write("Connecting to " .. sUrl .. "... ")
-
-    local response, http_err = http.get(sUrl, nil, true)
+    local response, http_error_message = http.get(url, nil, true)
     if not response then
-        printError("Failed to download \"" .. sUrl .. "\" (" .. http_err .. ")")
-        return nil
+        printError(('Failed to download "%s" (%s).'):format(
+            url,
+            http_error_message or unknown_error
+        ))
+        return
     end
 
-    local sResponse = response.readAll()
+    local response_body = response.readAll()
     response.close()
-    return sResponse or ""
+
+    if not response_body then
+        printError(('Failed to download "%s" (Empty response).'):format(url))
+    end
+
+    return response_body
 end
 
-for path, dl_link in pairs(files) do
-    local sPath = shell.resolve(path)
-    if fs.exists(sPath) then
-        if not question("\"" .. path .. "\" already exists. Override") then
+for path, download_url in pairs(files) do
+    local resolved_path = shell.resolve(path)
+    if fs.exists(resolved_path) then
+        if not question(('"%s" already exists. Override'):format(path)) then
             return
         end
     end
 
-    local res = get(dl_link)
-    if not res then return end
+    local response_body = http_get(download_url)
 
-    local file, err = fs.open(sPath, "wb")
+    local file, file_open_error_message = fs.open(resolved_path, "wb")
     if not file then
-        printError("Failed to save \"" .. path .. "\" (" .. err .. ")")
+        printError(('Failed to save "%s" (%s).'):format(
+            path,
+            file_open_error_message or unknown_error
+        ))
         return
     end
 
-    file.write(res)
+    file.write(response_body)
     file.close()
 
     term.setTextColour(colors.lime)
-    print("Downloaded \"" .. path .. "\"")
+    print(('Downloaded "%s"'):format(path))
 end
