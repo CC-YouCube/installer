@@ -17,7 +17,7 @@ local files = {
     ["./lib/numberformatter.lua"] = BASE_URL .. "lib/numberformatter.lua",
     ["./lib/semver.lua"] = BASE_URL .. "lib/semver.lua",
     ["./lib/argparse.lua"] = BASE_URL .. "lib/argparse.lua",
-    ["./lib/string_pack.lua"] = BASE_URL .. "lib/string_pack.lua"
+    ["./lib/string_pack.lua"] = BASE_URL .. "lib/string_pack.lua",
 }
 
 if not http then
@@ -44,16 +44,16 @@ local function question(message)
     local previous_colour = term.getTextColour()
 
     writeColoured(message .. "? [", colors.orange)
-    writeColoured('Y', colors.lime)
-    writeColoured('/', colors.orange)
-    writeColoured('n', colors.red)
-    writeColoured('] ', colors.orange)
+    writeColoured("Y", colors.lime)
+    writeColoured("/", colors.orange)
+    writeColoured("n", colors.red)
+    writeColoured("] ", colors.orange)
 
     -- Reset colour
     term.setTextColour(previous_colour)
 
     local input_char = read():sub(1, 1):lower()
-    local accept_chars = { 'o', 'k', 'y', 'j', '' }
+    local accept_chars = { "o", "k", "y", "j", "" }
 
     if tableContains(accept_chars, input_char) then
         return true
@@ -67,19 +67,13 @@ local unknown_error = "Unknown error"
 local function http_get(url)
     local valid_url, error_message = http.checkURL(url)
     if not valid_url then
-        printError(('"%s" %s.'):format(
-            url,
-            error_message or "Invalid URL"
-        ))
+        printError(('"%s" %s.'):format(url, error_message or "Invalid URL"))
         return
     end
 
     local response, http_error_message = http.get(url, nil, true)
     if not response then
-        printError(('Failed to download "%s" (%s).'):format(
-            url,
-            http_error_message or unknown_error
-        ))
+        printError(('Failed to download "%s" (%s).'):format(url, http_error_message or unknown_error))
         return
     end
 
@@ -105,10 +99,7 @@ for path, download_url in pairs(files) do
 
     local file, file_open_error_message = fs.open(resolved_path, "wb")
     if not file then
-        printError(('Failed to save "%s" (%s).'):format(
-            path,
-            file_open_error_message or unknown_error
-        ))
+        printError(('Failed to save "%s" (%s).'):format(path, file_open_error_message or unknown_error))
         return
     end
 

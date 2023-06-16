@@ -30,33 +30,21 @@ local function http_get(url)
     -- Check if the URL is valid
     local valid_url, error_message = http.checkURL(url)
     if not valid_url then
-        printError(('"%s" %s.'):format(
-            url,
-            error_message or "Invalid URL"
-        ))
+        printError(('"%s" %s.'):format(url, error_message or "Invalid URL"))
         return
     end
 
-    printColoured(
-        ('Connecting to "%s" ... '):format(url),
-        colors.lightGray
-    )
+    printColoured(('Connecting to "%s" ... '):format(url), colors.lightGray)
 
     local response, http_error_message = http.get(url, nil, true)
     if not response then
-        printError(('Failed to download "%s" (%s).'):format(
-            url,
-            http_error_message or "Unknown error"
-        ))
+        printError(('Failed to download "%s" (%s).'):format(url, http_error_message or "Unknown error"))
         return nil
     end
 
     local previous_colour = term.getTextColour()
 
-    printColoured(
-        ('Runnig "%s".'):format(getFilename(url)),
-        colors.lime
-    )
+    printColoured(('Runnig "%s".'):format(getFilename(url)), colors.lime)
 
     -- Reset colour
     term.setTextColour(previous_colour)
@@ -73,12 +61,7 @@ end
 
 local response_body = http_get(url_to_installer)
 
-local loaded_function, load_error_message = load(
-    response_body,
-    getFilename(url_to_installer),
-    "t",
-    _ENV
-)
+local loaded_function, load_error_message = load(response_body, getFilename(url_to_installer), "t", _ENV)
 if not loaded_function then
     printError(load_error_message)
     return
