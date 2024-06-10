@@ -9,7 +9,7 @@ License: GPL-3.0
 ]]
 -- OpenInstaller v1.0.0 (based on wget)
 
-local BASE_URL = "https://raw.githubusercontent.com/CC-YouCube/client/main/src/"
+local BASE_URL = "https://raw.githubusercontent.com/TheNameIsNigel/client/main/src/"
 
 local files = {
     ["./youcube.lua"] = BASE_URL .. "youcube.lua",
