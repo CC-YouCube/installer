@@ -9,7 +9,7 @@ License: GPL-3.0
 ]]
 -- OpenPastebinInstaller v1.0.0 (based on wget)
 
-local url_to_installer = "https://raw.githubusercontent.com/CC-YouCube/installer/main/src/installer.lua"
+local url_to_installer = "https://raw.githubusercontent.com/TheNameIsNigel/installer/main/src/installer.lua"
 
 if not http then
     printError("OpenPastebinInstaller requires the http API")
